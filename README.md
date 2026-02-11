@@ -11,6 +11,10 @@ npm run dev
 
 Danach ist die Anwendung unter `http://localhost:3000` erreichbar.
 
+## Erstbefüllung (Snapshot)
+
+Die bereitgestellten Startdaten sind in `src/lib/portfolio-data.ts` hinterlegt und werden direkt in den Dashboard-Seiten verwendet (`overview`, `equities`, `crypto`, `real-estate`, `cash`).
+
 ## Prisma
 
 ```bash

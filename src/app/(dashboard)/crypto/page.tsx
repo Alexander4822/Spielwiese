@@ -1,19 +1,26 @@
-import { AssetTable } from "@/components/asset-table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const cryptoRows = [
-  { name: "Bitcoin", value: "€780k", allocation: "7.8%", status: "stable" as const },
-  { name: "Ethereum", value: "€340k", allocation: "3.4%", status: "watch" as const },
-];
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { portfolioSnapshot } from "@/lib/portfolio-data";
 
 export default function CryptoPage() {
+  const crypto = portfolioSnapshot.assets.crypto;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Crypto</CardTitle>
+        <CardDescription>Holdings mit noch offener EUR-Bewertung.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <AssetTable rows={cryptoRows} />
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {crypto.holdings.map((holding) => (
+            <Badge key={holding.asset} variant="secondary" className="rounded-md px-3 py-1">
+              {holding.asset}: {holding.amount}
+            </Badge>
+          ))}
+        </div>
+        <p className="text-sm text-muted-foreground">Stand: {crypto.asOf}</p>
+        <p className="text-sm text-muted-foreground">{crypto.pricingNote}</p>
       </CardContent>
     </Card>
   );

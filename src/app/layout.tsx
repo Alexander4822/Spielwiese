@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import type { ReactNode } from "react";
 
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   description: "Neutral themed dashboard starter built with Next.js, Tailwind, shadcn/ui, and Prisma.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="de">
       <body className={inter.className}>
