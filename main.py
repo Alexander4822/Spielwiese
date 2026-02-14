@@ -33,6 +33,7 @@ AUDIO_NAMES = [
     "sfx_player_die",
     "sfx_bonus_start",
     "sfx_bonus_end",
+    "sfx_level_clear",
 ]
 
 
@@ -120,6 +121,23 @@ class AudioManager:
             s = self._tone(base * m, 0.18, "square" if i % 2 else "triangle")
             s.set_volume(self.music_volume * 0.5)
             s.play(maxtime=180)
+
+    def _synth_level_clear(self):
+        sequence = [523.25, 659.25, 783.99, 1046.5]
+        for i, freq in enumerate(sequence):
+            tone = self._tone(freq, 0.14 + i * 0.015, "triangle")
+            tone.set_volume(self.sfx_volume * 0.9)
+            tone.play(maxtime=220)
+
+    def play_level_clear(self):
+        if not self.sfx_enabled:
+            return
+        snd = self.sfx_cache.get("sfx_level_clear")
+        if snd is not None:
+            snd.set_volume(self.sfx_volume)
+            snd.play()
+        else:
+            self._synth_level_clear()
 
     def play_music(self, name: str):
         self.current_music = name
@@ -333,14 +351,25 @@ class Monster:
         py = GRID_Y + self.y * TILE_SIZE + TILE_SIZE // 2
 
         if self.type == "nobbin":
-            main, detail = (228, 72, 72), (255, 160, 160)
+            main, shade, glow = (228, 72, 72), (140, 35, 35), (255, 145, 145)
         else:
-            main, detail = (150, 80, 226), (210, 170, 255)
+            main, shade, glow = (150, 80, 226), (85, 45, 130), (210, 170, 255)
 
-        pygame.draw.circle(surf, (30, 20, 20), (int(px), int(py)), 12)
-        pygame.draw.circle(surf, main, (int(px), int(py)), 10)
-        pygame.draw.circle(surf, detail, (int(px - 3), int(py - 2)), 3)
-        pygame.draw.circle(surf, detail, (int(px + 3), int(py - 2)), 3)
+        body = [(px - 10, py + 8), (px - 10, py - 2), (px - 6, py - 8), (px + 6, py - 8), (px + 10, py - 2), (px + 10, py + 8)]
+        pygame.draw.polygon(surf, (20, 16, 24), body)
+        pygame.draw.polygon(surf, main, body)
+        pygame.draw.polygon(surf, shade, body, 2)
+
+        for wave in (-7, -2, 3, 8):
+            pygame.draw.circle(surf, main, (int(px + wave), int(py + 9)), 3)
+            pygame.draw.circle(surf, shade, (int(px + wave), int(py + 9)), 1)
+
+        pygame.draw.circle(surf, (245, 245, 255), (int(px - 4), int(py - 2)), 3)
+        pygame.draw.circle(surf, (245, 245, 255), (int(px + 4), int(py - 2)), 3)
+        pygame.draw.circle(surf, glow, (int(px - 2), int(py - 2)), 1)
+        pygame.draw.circle(surf, glow, (int(px + 2), int(py - 2)), 1)
+        pygame.draw.circle(surf, (15, 15, 20), (int(px - 4), int(py - 1)), 1)
+        pygame.draw.circle(surf, (15, 15, 20), (int(px + 4), int(py - 1)), 1)
 
 
 class Game:
@@ -663,6 +692,7 @@ class Game:
         if not self.emeralds:
             self.level_clear_timer += dt
             if self.level_clear_timer > 1.2:
+                self.audio.play_level_clear()
                 self.level += 1
                 self.level_clear_timer = 0.0
                 self.new_level()
@@ -770,8 +800,13 @@ class Game:
         px = GRID_X + self.player_x * TILE_SIZE + TILE_SIZE // 2
         py = GRID_Y + self.player_y * TILE_SIZE + TILE_SIZE // 2
 
-        body = (255, 245, 120) if not self.bonus_mode else (255, 255, 155)
-        border = (145, 115, 30)
+        if self.bonus_mode:
+            blink_on = (pygame.time.get_ticks() // 120) % 2 == 0
+            body = (255, 255, 255) if blink_on else (255, 255, 155)
+            border = (220, 220, 220) if blink_on else (145, 115, 30)
+        else:
+            body = (255, 245, 120)
+            border = (145, 115, 30)
         pygame.draw.circle(self.screen, border, (int(px), int(py)), 12)
         pygame.draw.circle(self.screen, body, (int(px), int(py)), 10)
 
