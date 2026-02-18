@@ -4,6 +4,9 @@ using NapoleonPrototype.Gameplay;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace NapoleonPrototype.UI
 {
@@ -33,6 +36,18 @@ namespace NapoleonPrototype.UI
         [Header("End Screen")]
         [SerializeField] private GameObject endPanel;
         [SerializeField] private Text endText;
+        [SerializeField] private TMP_Text introText;
+
+        [Header("HUD")]
+        [SerializeField] private GameObject hudRoot;
+        [SerializeField] private TMP_Text timerText;
+        [SerializeField] private TMP_Text scoreText;
+        [SerializeField] private TMP_Text pointStatusText;
+        [SerializeField] private TMP_Text playerHpText;
+
+        [Header("End Screen")]
+        [SerializeField] private GameObject endPanel;
+        [SerializeField] private TMP_Text endText;
 
         [Header("Refs")]
         [SerializeField] private Health playerHealth;
