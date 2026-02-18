@@ -75,12 +75,14 @@ namespace NapoleonPrototype.UI
                 hudRoot.SetActive(false);
             }
 
+            // First-run fallback: if intro overlay is not wired, start mission immediately.
             if (introOverlayRoot == null)
             {
                 if (hudRoot != null)
                 {
                     hudRoot.SetActive(true);
                 }
+
                 GameManager.Instance?.StartMission();
             }
         }
@@ -88,22 +90,6 @@ namespace NapoleonPrototype.UI
         private void Update()
         {
             string currentScene = SceneManager.GetActiveScene().name;
-
-            if (currentScene == "Scene_MainMenu")
-            {
-                if (Input.GetKeyDown(KeyCode.Return))
-                {
-                    OnStartMissionPressed();
-                }
-
-                if (Input.GetKeyDown(KeyCode.Escape))
-                {
-                    OnQuitPressed();
-                }
-
-                return;
-            }
-
             if (currentScene != missionSceneName)
             {
                 return;
@@ -112,6 +98,7 @@ namespace NapoleonPrototype.UI
             if (introOverlayRoot != null && introOverlayRoot.activeSelf && Input.GetKeyDown(KeyCode.Return))
             {
                 introOverlayRoot.SetActive(false);
+
                 if (hudRoot != null)
                 {
                     hudRoot.SetActive(true);
@@ -178,15 +165,6 @@ namespace NapoleonPrototype.UI
             if (hudRoot != null)
             {
                 hudRoot.SetActive(false);
-            }
-
-            if (introOverlayRoot == null)
-            {
-                if (hudRoot != null)
-                {
-                    hudRoot.SetActive(true);
-                }
-                GameManager.Instance?.StartMission();
             }
 
             if (endPanel != null)
