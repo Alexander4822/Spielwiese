@@ -1,6 +1,9 @@
 using System.Text;
 using NapoleonPrototype.Core;
 using NapoleonPrototype.Gameplay;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,6 +12,7 @@ namespace NapoleonPrototype.UI
 {
     /// <summary>
     /// Handles main menu flow, mission intro overlay, and in-game HUD.
+    /// Uses legacy Unity UI Text to avoid TMP setup requirements.
     /// </summary>
     public class UIManager : MonoBehaviour
     {
@@ -20,6 +24,18 @@ namespace NapoleonPrototype.UI
 
         [Header("Mission Intro")]
         [SerializeField] private GameObject introOverlayRoot;
+        [SerializeField] private Text introText;
+
+        [Header("HUD")]
+        [SerializeField] private GameObject hudRoot;
+        [SerializeField] private Text timerText;
+        [SerializeField] private Text scoreText;
+        [SerializeField] private Text pointStatusText;
+        [SerializeField] private Text playerHpText;
+
+        [Header("End Screen")]
+        [SerializeField] private GameObject endPanel;
+        [SerializeField] private Text endText;
         [SerializeField] private TMP_Text introText;
 
         [Header("HUD")]
@@ -73,6 +89,17 @@ namespace NapoleonPrototype.UI
             {
                 hudRoot.SetActive(false);
             }
+
+            // First-run fallback: if intro overlay is not wired, start mission immediately.
+            if (introOverlayRoot == null)
+            {
+                if (hudRoot != null)
+                {
+                    hudRoot.SetActive(true);
+                }
+
+                GameManager.Instance?.StartMission();
+            }
         }
 
         private void Update()
@@ -86,10 +113,12 @@ namespace NapoleonPrototype.UI
             if (introOverlayRoot != null && introOverlayRoot.activeSelf && Input.GetKeyDown(KeyCode.Return))
             {
                 introOverlayRoot.SetActive(false);
+
                 if (hudRoot != null)
                 {
                     hudRoot.SetActive(true);
                 }
+
                 GameManager.Instance?.StartMission();
             }
 
