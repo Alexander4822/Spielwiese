@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RealEstateSegment {
+  APARTMENT
+  EXISTING_HOME
+  NEW_HOME
+}
+
+enum InstrumentType {
+  EQUITY
+  CRYPTO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model EquityPosition {
+  id        String   @id @default(cuid())
+  ticker    String
+  name      String
+  qty       Decimal  @db.Decimal(18, 8)
+  currency  String
+  avgCost   Decimal? @db.Decimal(18, 8)
+  broker    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ticker])
+}
+
+model CryptoPosition {
+  id        String   @id @default(cuid())
+  symbol    String
+  name      String
+  qty       Decimal  @db.Decimal(28, 10)
+  avgCost   Decimal? @db.Decimal(18, 8)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([symbol])
+}
+
+model CashAccount {
+  id        String   @id @default(cuid())
+  name      String
+  balance   Decimal  @db.Decimal(18, 2)
+  currency  String   @default("EUR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RealEstate {
+  id            String            @id @default(cuid())
+  name          String
+  location      String
+  segment       RealEstateSegment
+  baselineValue Decimal           @db.Decimal(18, 2)
+  // baselineMonth intentionally stored as YYYY-MM string for timezone-safe month semantics.
+  // Alternative: DateTime normalized to first day of month (00:00:00Z) with strict write-side normalization.
+  baselineMonth String
+  loans         Loan[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([segment])
+  @@index([baselineMonth])
+}
+
+model Loan {
+  id                 String      @id @default(cuid())
+  realEstateId       String
+  lender             String
+  remainingPrincipal Decimal     @db.Decimal(18, 2)
+  interestRate       Decimal?    @db.Decimal(7, 4)
+  monthlyPayment     Decimal?    @db.Decimal(18, 2)
+  realEstate         RealEstate  @relation(fields: [realEstateId], references: [id], onDelete: Cascade)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  @@index([realEstateId])
+}
+
+model PriceQuote {
+  id             String         @id @default(cuid())
+  instrumentType InstrumentType
+  symbol         String
+  price          Decimal        @db.Decimal(18, 8)
+  currency       String
+  changeAbs      Decimal?       @db.Decimal(18, 8)
+  changePct      Decimal?       @db.Decimal(9, 6)
+  asOf           DateTime
+  asOfBucket     DateTime
+  createdAt      DateTime       @default(now())
+
+  @@index([symbol, asOf])
+  @@unique([instrumentType, symbol, asOfBucket])
+}
+
+model FxRate {
+  id        String   @id @default(cuid())
+  base      String
+  quote     String
+  rate      Decimal  @db.Decimal(18, 8)
+  asOfDate  DateTime
+  createdAt DateTime @default(now())
+
+  @@index([base, quote, asOfDate])
+  @@unique([base, quote, asOfDate])
+}
+
+model EpxIndex {
+  id            String   @id @default(cuid())
+  month         String   @unique
+  apartments    Decimal  @db.Decimal(18, 4)
+  existingHomes Decimal  @db.Decimal(18, 4)
+  newHomes      Decimal  @db.Decimal(18, 4)
+  sourceHash    String?
+  fetchedAt     DateTime @default(now())
+}
+
+model NetWorthSnapshot {
+  id               String   @id @default(cuid())
+  date             DateTime
+  assetsTotal      Decimal  @db.Decimal(18, 2)
+  liabilitiesTotal Decimal  @db.Decimal(18, 2)
+  netWorth         Decimal  @db.Decimal(18, 2)
+  createdAt        DateTime @default(now())
+
+  @@unique([date])
+}
